@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-
+from keras.models import load_model as lm
 import numpy as np
+from cv2 import resize, cvtColor, COLOR_BGR2RGB
 
 from aido_schemas import EpisodeStart, protocol_agent_duckiebot1, PWMCommands, Duckiebot1Commands, LEDSCommands, RGB, \
     wrap_direct, Context, Duckiebot1Observations, JPGImage
@@ -10,11 +11,9 @@ expect_shape = (480, 640, 3)
 
 class TensorflowTemplateAgent:
     def __init__(self, load_model=False, model_path=None):
-        from model import TfInference
-        # define observation and output shapes
-        self.model = TfInference(observation_shape=(1,) + expect_shape,  # this is the shape of the image we get.
-                                 action_shape=(1, 2),  # we need to output v, omega.
-                                 graph_location='tf_models/')  # this is the folder where our models are stored.
+	# returns a compiled model
+	# identical to the previous one
+        self.model = lm('tf_models/VGG16#8.h5')
         self.current_image = np.zeros(expect_shape)
 
     def init(self, context: Context):
@@ -31,7 +30,10 @@ class TensorflowTemplateAgent:
         self.current_image = jpg2rgb(camera.jpg_data)
 
     def compute_action(self, observation):
-        action = self.model.predict(observation)
+        observation = resize(observation, (80, 60))
+        observation = cvtColor(observation, COLOR_BGR2RGB)
+
+        action = np.squeeze(self.model.predict(np.reshape(observation, (1,60,80,3))))
         return action.astype(float)
 
     def on_received_get_commands(self, context: Context):
