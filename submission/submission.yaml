@@ -4,7 +4,7 @@
 # conventions + format
 protocol: aido2_db18_agent-z2
 
-user-label: "baseline-IL-sim-tensorflow"
+user-label: "UniBielefeld**"
 description: |
     This is a simple template for an agent that uses Tensorflow for inference.
 
