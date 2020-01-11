@@ -3,8 +3,8 @@ VGG16 based approach to AI Driving Olympics competition (AIDO-3)
 
 ## Steps
 ### 1. Download required packages 
-`cd challenge-aido_LF-baseline-IL-sim-tensorflow/learning`
-`pip install -r requirements.txt`
+`cd challenge-aido_LF-baseline-IL-sim-tensorflow/learning` \
+`pip install -r requirements.txt` \
 `pip install -e git://github.com/duckietown/gym-duckietown.git@daffy#egg=gym-duckietown`
 
 ### 2. Run "/learning/log.py" to create training data:
