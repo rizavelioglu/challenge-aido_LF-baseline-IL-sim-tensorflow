@@ -1,34 +1,67 @@
 import cv2
 from env import launch_env
-from teacher import PurePursuitExpert
 from _loggers import Logger
 from utils.helpers import SteeringToWheelVelWrapper
 
-# Log configuration, you can pick your own values here
-# the more the better? or the smarter the better?
-EPISODES = 10
-STEPS = 512
+EPISODES = 25
+STEPS = 2000
 
-DEBUG = False
-
+DEBUG = True
 env = launch_env()
-
-# To convert to wheel velocities
 wrapper = SteeringToWheelVelWrapper()
+logger = Logger(env, log_file='train-v10.log')
 
-# this is an imperfect demonstrator... I'm sure you can construct a better one.
-expert = PurePursuitExpert(env=env)
-
-# please notice
-logger = Logger(env, log_file='train.log')
-
-# let's collect our samples
 for episode in range(0, EPISODES):
+    prev_angles = [0] * 10
+    prev_angle = 0
     for steps in range(0, STEPS):
         # we use our 'expert' to predict the next action.
-        action = expert.predict(None)
+        lane_pose = env.get_lane_pos2(env.cur_pos, env.cur_angle)
+        distance_to_road_center = lane_pose.dist
+        angle_from_straight_in_rads = lane_pose.angle_rad
+
+        # k_p = 17
+        # k_d = 9
+        # k_i = 0.1
+        # if -0.5 < lane_pose.angle_deg < 0.5:
+        #     speed = 1
+        # elif -1 < lane_pose.angle_deg < 1:
+        #     speed = 0.9
+        # elif -2 < lane_pose.angle_deg < 2:
+        #     speed = 0.8
+        # elif -20 < lane_pose.angle_deg < 20:
+        #     speed = 0.6
+        # elif -30 < lane_pose.angle_deg < 30:
+        #     speed = 0.4
+        # else:
+        #     k_p = 33
+        #     k_d = 8
+        #     k_i = 0.05
+        #     speed = 0.3
+
+        k_p = 17
+        k_d = 9
+        k_i = 0.1
+        if -0.5 < lane_pose.angle_deg < 0.5:
+            speed = 1
+        elif -1 < lane_pose.angle_deg < 1:
+            speed = 0.9
+        elif -2 < lane_pose.angle_deg < 2:
+            speed = 0.8
+        elif -10 < lane_pose.angle_deg < 10:
+            speed = 0.5
+        else:
+            speed = 0.3
+
+        prev_angles.append(abs(prev_angle - lane_pose.angle_deg))
+        prev_angles.pop(0)
+        prev_angle = lane_pose.angle_deg
+
+        # angle of the steering wheel, which corresponds to the angular velocity in rad/s
+        steering = k_p * distance_to_road_center + k_d * angle_from_straight_in_rads + k_i * sum(prev_angles)
+
         # Convert to wheel velocities
-        action = wrapper.convert(action)
+        action = wrapper.convert([speed, steering])
         observation, reward, done, info = env.step(action)
         closest_point, _ = env.closest_curve_point(env.cur_pos, env.cur_angle)
         if closest_point is None:
@@ -50,9 +83,5 @@ for episode in range(0, EPISODES):
     logger.on_episode_done()  # speed up logging by flushing the file
     env.reset()
 
-# we flush everything and close the file, it should be ~ 120mb
-# NOTICE: we make the log file read-only, this prevent us from erasing all collected data by mistake
-# believe me, this is an important issue... can you imagine loosing 2 GB of data? No? We do...
 logger.close()
-
 env.close()
