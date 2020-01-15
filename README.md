@@ -20,3 +20,7 @@ VGG16 based approach to AI Driving Olympics competition (AIDO-3)
 
 ### OR make an official submission:
 `dts challenges submit`
+
+
+## Note:
+You might want to run `train.py` on the cloud because VGG16 is a huge model and it takes long time to train. Therefore, a jupyter notebook instance is created: `train.ipynb`, that can be run on Google Colab!
