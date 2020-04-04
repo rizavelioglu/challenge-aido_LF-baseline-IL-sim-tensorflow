@@ -1,6 +1,8 @@
 # challenge-aido_LF-baseline-IL-sim-tensorflow
 VGG16 based approach to AI Driving Olympics competition (AIDO-3)
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rizavelioglu/challenge-aido_LF-baseline-IL-sim-tensorflow/blob/daffy/learning/train.ipynb)
+
 ## Steps
 ### 1. Download required packages 
 `cd challenge-aido_LF-baseline-IL-sim-tensorflow/learning` \
